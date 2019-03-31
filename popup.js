@@ -49,7 +49,7 @@ db.collection('notes').get()
         .then(result => {
           const noteData = result.data();
           const newListItem = `
-            <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}">
+            <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}" target="_blank">
               <div class="d-flex justify-content-between">
                 <h6>${noteData.title}</h6>
                 <small>${daysBetweenNowAndThen(noteData.date)}</small>
@@ -123,6 +123,6 @@ const daysBetweenNowAndThen = unixTimestamp => {
   } else if (daysBetween === 1) {
     return `Yesterday`;
   } else {
-    return `${daysBetween} ago`;
+    return `${daysBetween} days ago`;
   }
 }
