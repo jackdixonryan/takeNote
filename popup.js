@@ -50,9 +50,9 @@ db.collection('notes').get()
           const noteData = result.data();
           const newListItem = `
             <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}">
-              <div class="d-flex w-100 justify-content-between">
+              <div class="d-flex justify-content-between">
                 <h6>${noteData.title}</h6>
-                <small>A Date</small>
+                <small>${daysBetweenNowAndThen(noteData.date)}</small>
               </div>
               <p class="mb-1">${noteData.userComments || 'No comments.'}</p>
             </a>
@@ -106,4 +106,23 @@ for (let i = 0; i < navLinks.length; i++) {
       mainForm.hidden = true;
     }
   });
+}
+
+const daysBetweenNowAndThen = unixTimestamp => {
+  const javascriptDate = new Date(unixTimestamp.seconds * 1000);
+
+  const dayOfEntry = javascriptDate.getDate();
+  
+  const now = new Date();
+  const today = now.getDate();
+  console.log(javascriptDate, now);
+
+  const daysBetween = today - dayOfEntry;
+  if (daysBetween === 0) {
+    return `Today`;
+  } else if (daysBetween === 1) {
+    return `Yesterday`;
+  } else {
+    return `${daysBetween} ago`;
+  }
 }

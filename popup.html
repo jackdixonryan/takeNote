@@ -1,8 +1,31 @@
 <html>
   <head>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+
+      .nav {
+        padding: .5rem;
+      }
+
+      #most-recent {
+        height: 16rem;
+        overflow: scroll;
+        width: 20rem;
+      }
+
+      #main-form {
+        height: 16rem;
+        width: 20rem;
+      }
+      
+      .action-area {
+        padding: .5rem;
+        height: 1rem;
+      }
+    </style>
   </head>
   <body>
+
     <div id="navigation">
       <ul class="nav nav-pills nav-fill">
         <li class="nav-item">
@@ -13,12 +36,14 @@
         </li>
       </ul>
     </div>
+
     <div id="most-recent">
       <!--The most recent hits will go right in here.-->
       <div class="list-group" id="visited-links">
       </div>
     </div>
-    <div id="main-form" class="card" style="width: 18rem;">
+
+    <div id="main-form" class="card">
       <div class="card-body">
         <h5 class="card-title">Make a Note</h5>
         <input type="text" id="page-title-input" class="form-control" style="margin-bottom:1rem;"/>
@@ -28,6 +53,7 @@
         <p id="error"></p>
       </div>
     </div>
+
   </body>
   <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
   <script src="popup.js"></script>
