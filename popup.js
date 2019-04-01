@@ -13,6 +13,8 @@ firebase.initializeApp(config);
 const db = firebase.firestore();
 const notesRef = db.collection('notes');
 
+// Selectors out the YANG!
+
 const inputValue = document.getElementById('page-title-input');
 const addDetails = document.getElementById('add-details');
 const notesBox = document.getElementById('notes-box');
@@ -23,14 +25,13 @@ const mostRecent = document.getElementById('most-recent');
 mostRecent.hidden = true;
 
 const mainForm = document.getElementById('main-form');
-
 const listGroup = document.getElementById('visited-links');
-
 const navLinks = document.getElementsByClassName('nav-link');
-console.log(navLinks);
 
 let url;
+console.log("I read the console, Dan.");
 
+// The actual thing the extension does.
 chrome.tabs.query({
   active: true,
   currentWindow: true
@@ -39,35 +40,31 @@ chrome.tabs.query({
   url = tabs[0].url;
 });
 
-db.collection('notes').get()
-  .then(notes => {
-
-    for (let i = 0; i < notes.docs.length; i++) {
-      db.collection('notes')
-        .doc(notes.docs[i].id)
-        .get()
-        .then(result => {
-          const noteData = result.data();
-          const newListItem = `
-            <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}" target="_blank">
-              <div class="d-flex justify-content-between">
-                <h6>${noteData.title}</h6>
-                <small>${daysBetweenNowAndThen(noteData.date)}</small>
-              </div>
-              <p class="mb-1">${noteData.userComments || 'No comments.'}</p>
-            </a>
-          `;
-          listGroup.innerHTML += newListItem;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+// here we add our most recent view. This returns the five most recently created entries because Firestore is a bitching tool with no real rivals. 
+db.collection('notes')
+  .orderBy("date", "desc")
+  .limit(5)
+  .get()
+  .then(result => {
+    for (let i = 0; i < result.docs.length; i++) {
+      const noteData = result.docs[i].data();
+      const newListItem = `
+        <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}" target="_blank">
+          <div class="d-flex justify-content-between">
+            <h6>${noteData.title}</h6>
+            <small>${daysBetweenNowAndThen(noteData.date)}</small>
+          </div>
+          <p class="mb-1">${noteData.userComments || 'No comments.'}</p>
+        </a>
+      `;
+      listGroup.innerHTML += newListItem;
     }
-  })
-  .catch(error => {
-    console.error(error);
-  });
+    })
+    .catch(error => {
+      console.log(error);
+    });
 
+// Here we let users add their own commentary.
 addDetails.addEventListener('click', () => {
   const textArea = `
     <textarea class="form-control" id="userNotes" style="margin-bottom: 1rem;"></textarea>
@@ -75,9 +72,9 @@ addDetails.addEventListener('click', () => {
   notesBox.innerHTML = textArea;
 });
 
+// Here we actually create the note 
 takeNote.addEventListener('click', () => {
   const userCommentArea = document.getElementById('userNotes');
-  console.log(userCommentArea);
   const userAddedComments = userCommentArea ? userCommentArea.value : null;
 
   notesRef.add({
@@ -89,6 +86,7 @@ takeNote.addEventListener('click', () => {
 });
 
 
+// here lies the logic for tab panning behavior.
 for (let i = 0; i < navLinks.length; i++) {
   navLinks[i].addEventListener('click', () => {
     // active = i;
@@ -108,6 +106,7 @@ for (let i = 0; i < navLinks.length; i++) {
   });
 }
 
+// a method that takes the firebase unixTimestamp, converts it into a date and returns how long ago the note was taken. This will need revision at some point, probably now given that it's april all of the sudden.
 const daysBetweenNowAndThen = unixTimestamp => {
   const javascriptDate = new Date(unixTimestamp.seconds * 1000);
 
@@ -115,13 +114,14 @@ const daysBetweenNowAndThen = unixTimestamp => {
   
   const now = new Date();
   const today = now.getDate();
-  console.log(javascriptDate, now);
 
   const daysBetween = today - dayOfEntry;
   if (daysBetween === 0) {
     return `Today`;
   } else if (daysBetween === 1) {
     return `Yesterday`;
+  } else if (daysBetween < 0) {
+    return `${javascriptDate.getMonth()}/${javascriptDate.getDate()}`;
   } else {
     return `${daysBetween} days ago`;
   }
