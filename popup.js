@@ -13,6 +13,37 @@ firebase.initializeApp(config);
 const db = firebase.firestore();
 const notesRef = db.collection('notes');
 
+let activeUser;
+
+// checking on bootup if we're logged in.
+firebase.auth().onAuthStateChanged(user => {
+  // if we have a user we're good to go. 
+  if (user) {
+    activeUser = user;
+    console.log(activeUser);
+  // otherwise we've got to sign in or sign up. Here's where that will be hidden. The HTML for this is actually within the template because when I was trying to put it directly in here it was causing all kinds of wonky issues. 
+  } else {
+    const submitLogin = document.getElementById('submit-login');
+    const loginBanner = document.getElementById("login-banner");
+    loginBanner.hidden = false;
+    
+    submitLogin.addEventListener('click', () => {
+      const email = document.getElementById('user-email').value;
+      const password = document.getElementById('user-password').value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(successfulSignIn => {
+          loginBanner.hidden = true;
+          activeUser = successfulSignIn.user;
+        })
+        .catch(error => {
+          // two kinds of errors so far: user not found, bad email address formatting.
+          console.log(error);
+        });
+    });
+  }
+})
+
 // Selectors out the YANG!
 
 const inputValue = document.getElementById('page-title-input');
@@ -30,6 +61,7 @@ const navLinks = document.getElementsByClassName('nav-link');
 
 let url;
 console.log("I read the console, Dan.");
+
 
 // The actual thing the extension does.
 chrome.tabs.query({
@@ -82,7 +114,12 @@ takeNote.addEventListener('click', () => {
     title: inputValue.value,
     date: new Date,
     userComments: userAddedComments,
+    madeBy: activeUser.uid
   })
+  .then(next => {
+    window.close();
+  });
+
 });
 
 
