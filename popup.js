@@ -19,8 +19,34 @@ let activeUser;
 firebase.auth().onAuthStateChanged(user => {
   // if we have a user we're good to go. 
   if (user) {
+    
     activeUser = user;
-    console.log(activeUser);
+
+    // here we add our most recent view. This returns the five most recently created entries because Firestore is a great tool with no real rivals. 
+    db.collection('notes')
+    .orderBy("date", "desc")
+    .where("madeBy", "==", activeUser.uid)
+    .limit(5)
+    .get()
+    .then(result => {
+      for (let i = 0; i < result.docs.length; i++) {
+        const noteData = result.docs[i].data();
+        const newListItem = `
+          <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}" target="_blank">
+            <div class="d-flex justify-content-between">
+              <h6>${noteData.title}</h6>
+              <small>${daysBetweenNowAndThen(noteData.date)}</small>
+            </div>
+            <p class="mb-1">${noteData.userComments || 'No comments.'}</p>
+          </a>
+        `;
+        listGroup.innerHTML += newListItem;
+      }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
   // otherwise we've got to sign in or sign up. Here's where that will be hidden. The HTML for this is actually within the template because when I was trying to put it directly in here it was causing all kinds of wonky issues. 
   } else {
     const submitLogin = document.getElementById('submit-login');
@@ -72,29 +98,6 @@ chrome.tabs.query({
   url = tabs[0].url;
 });
 
-// here we add our most recent view. This returns the five most recently created entries because Firestore is a bitching tool with no real rivals. 
-db.collection('notes')
-  .orderBy("date", "desc")
-  .limit(5)
-  .get()
-  .then(result => {
-    for (let i = 0; i < result.docs.length; i++) {
-      const noteData = result.docs[i].data();
-      const newListItem = `
-        <a class="list-group-item list-group-item-action flex-column align-items-start" href="${noteData.url}" target="_blank">
-          <div class="d-flex justify-content-between">
-            <h6>${noteData.title}</h6>
-            <small>${daysBetweenNowAndThen(noteData.date)}</small>
-          </div>
-          <p class="mb-1">${noteData.userComments || 'No comments.'}</p>
-        </a>
-      `;
-      listGroup.innerHTML += newListItem;
-    }
-    })
-    .catch(error => {
-      console.log(error);
-    });
 
 // Here we let users add their own commentary.
 addDetails.addEventListener('click', () => {
